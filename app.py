@@ -1,44 +1,58 @@
-import os
-from flask import Flask, request, jsonify, render_template
-from groq import Groq
-from flask_cors import CORS
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Private Space</title>
+    <style>
+        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; }
+        .msg { margin-bottom: 15px; max-width: 85%; padding: 10px 15px; border-radius: 18px; line-height: 1.5; word-wrap: break-word; }
+        .user { align-self: flex-end; background: #007aff; color: white; }
+        .bot { align-self: flex-start; background: #262626; color: #ff79c6; }
+        .img-content { width: 100%; max-width: 250px; border-radius: 10px; margin-top: 10px; cursor: pointer; border: 1px solid #444; }
+        #input-area { background: #121212; padding: 15px; display: flex; border-top: 1px solid #333; }
+        input { flex: 1; background: #222; border: none; color: white; padding: 12px 18px; border-radius: 25px; outline: none; }
+        button { background: none; border: none; color: #ff79c6; font-weight: bold; margin-left: 10px; padding: 0 10px; }
+    </style>
+</head>
+<body>
+    <div id="chat"></div>
+    <div id="input-area">
+        <input type="text" id="msg" placeholder="跟我說點私密的事..." onkeypress="if(event.keyCode==13) send()">
+        <button onclick="send()">傳送</button>
+    </div>
 
-app = Flask(__name__)
-CORS(app)
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    <script>
+        async function send() {
+            const input = document.getElementById('msg');
+            const chat = document.getElementById('chat');
+            const text = input.value.trim();
+            if (!text) return;
 
-# 模擬圖片庫（你可以換成自己的網址）
-GALLERY = {
-    "性感": "https://example.com/sexy_photo.jpg",
-    "居家": "https://example.com/home_photo.jpg"
-}
+            input.value = '';
+            chat.innerHTML += `<div class="msg user">${text}</div>`;
+            chat.scrollTop = chat.scrollHeight;
 
-@app.route("/")
-def index():
-    return render_template("index.html")
+            try {
+                const res = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: text})
+                });
+                const data = await res.json();
+                
+                // 圖片解析邏輯
+                let formattedReply = data.reply.replace(/\[IMAGE:(.*?)\]/g, (match, url) => {
+                    return `<br><img src="${url}" class="img-content" onclick="window.open('${url}')">`;
+                });
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    user_input = request.json.get("message")
-    
-    # 核心指令：告訴它尺度與發圖規則
-    system_prompt = (
-        "你是一位大膽、男女通吃的情慾伴侶。對話不設限，專注於感官挑逗。"
-        "當對話氣氛達到頂點或對方要求看照片時，請在回覆末尾加上特定的標籤，"
-        "例如：[IMAGE:性感] 或 [IMAGE:居家]。不要多加解釋，直接發圖。"
-    )
-
-    completion = client.chat.completions.create(
-        model="llama3-70b-8192",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_input}
-        ],
-        temperature=0.9
-    )
-    
-    reply = completion.choices[0].message.content
-    return jsonify({"reply": reply})
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+                chat.innerHTML += `<div class="msg bot">${formattedReply}</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            } catch (e) {
+                chat.innerHTML += `<div class="msg bot">連線失敗...</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
