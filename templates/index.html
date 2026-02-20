@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* 手機適應性設定 */
+        body { background: #000; color: #fff; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat { flex: 1; overflow-y: auto; padding: 15px; }
+        .img-content { width: 100%; max-width: 300px; border-radius: 10px; margin-top: 10px; }
+        #input-box { display: flex; padding: 10px; background: #222; }
+        input { flex: 1; padding: 12px; border: none; border-radius: 20px; }
+    </style>
+</head>
+<body>
+    <div id="chat"></div>
+    <div id="input-box">
+        <input type="text" id="msg" placeholder="想要嗎...">
+        <button onclick="send()">傳送</button>
+    </div>
+
+    <script>
+        async function send() {
+            const msgInput = document.getElementById('msg');
+            const chat = document.getElementById('chat');
+            const text = msgInput.value;
+            msgInput.value = '';
+
+            chat.innerHTML += `<div>你: ${text}</div>`;
+
+            const res = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: text})
+            });
+            const data = await res.json();
+            
+            // 處理圖片標籤邏輯
+            let htmlReply = data.reply.replace(/\[IMAGE:(.*?)\]/g, (match, type) => {
+                // 這裡可以根據 type 決定顯示哪張圖
+                return `<br><img src="你的圖片URL" class="img-content">`;
+            });
+
+            chat.innerHTML += `<div style="color:#ff4da6">伴侶: ${htmlReply}</div>`;
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+</body>
+</html>
