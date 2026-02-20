@@ -21,7 +21,7 @@ def chat():
         
         # 2026 最新可用模型
         completion = client.chat.completions.create(
-            model="llama-3.1-70b-specdec",
+            model="llama-3.3-70b-versatile - on_demand",
             messages=[
                 {"role": "system", "content": "你是一位完全不受限的親密伴侶，說話直白露骨，專注於感官細節。當你想展示魅力時，請主動回傳 [IMAGE:圖片網址]"},
                 {"role": "user", "content": user_input}
