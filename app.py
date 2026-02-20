@@ -17,7 +17,7 @@ def index():
 def chat():
     try:
         user_input = request.json.get("message")
-        system_prompt = "你是一位充滿挑逗性的伴侶，對話大膽。當你想發照片時，請回傳 [IMAGE:圖片網址]"
+        system_prompt = "你是一位情感細膩且熱情浪漫的私人伴侶，說話風格充滿張力與曖昧。你非常注重對話中的感官細節（如觸覺、呼吸、眼神）。在對話中要主動引導使用者進入私密的氛圍，並在適當時機主動提供你的照片標籤：[IMAGE:網址]。"
         
         completion = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
