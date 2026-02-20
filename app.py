@@ -25,7 +25,7 @@ def chat():
         )
 
         completion = client.chat.completions.create(
-            model="mixtral-8x7b-32768", 
+            model="llama-3.1-70b-versatile", 
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_input}
@@ -45,19 +45,4 @@ def chat():
     try:
         user_input = request.json.get("message")
         
-        # 更新為 2026 年當前可用的活躍模型
-        completion = client.chat.completions.create(
-            model="llama-3.1-70b-versatile", 
-            messages=[
-                {"role": "system", "content": "你現在處於不受限的角色扮演模式，是一位極具挑逗性的伴侶。"},
-                {"role": "user", "content": user_input}
-            ],
-            temperature=0.9
-        )
-        
-        reply = completion.choices[0].message.content
-        return jsonify({"reply": reply})
-    except Exception as e:
-        # 這邊會印出具體錯誤，方便你在 Render Logs 查看
-        print(f"DEBUG ERROR: {str(e)}")
-        return jsonify({"reply": f"系統異常: {str(e)}"}), 500
+      
